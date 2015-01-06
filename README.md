@@ -15,6 +15,7 @@ require_once( "$IP/extensions/ContentStaging/ContentStaging.php" );
 
 Define globals according to your desired configuration:
 
+```
 // use a specific namespace for managed content
 $wgContentStagingNamespace = NS_MAIN;
 
@@ -27,6 +28,7 @@ $wgContentStagingStages = array(
 	"stage" => 0,
 	"production" => 0
 );
+```
 
 
 ## Usage
