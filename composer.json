@@ -1,0 +1,14 @@
+{
+	"name": "wmde/ContentStaging",
+	"description": "",
+	"require-dev": {
+		"squizlabs/php_codesniffer": "~2.1",
+		"phpmd/phpmd": "~2.1"
+	},
+	"scripts": {
+		"cs": [
+			"vendor/bin/phpcs . --standard=phpcs.xml --extensions=php -spl",
+			"vendor/bin/phpmd . text phpmd.xml --exclude vendor"
+		]
+	}
+}
