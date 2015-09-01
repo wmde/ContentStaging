@@ -194,11 +194,11 @@ class SpecialContentStaging extends SpecialPage {
 	}
 
 	/**
-	 * @param $prefix
-	 * @param $page
-	 * @param $source
-	 * @param $target
-	 * @return mixed
+	 * @param string $prefix
+	 * @param string $page
+	 * @param string $source
+	 * @param string $target
+	 * @return string
 	 */
 	private function replaceStageInternalRefs( $prefix, $page, $source, $target ) {
 		return str_replace( $prefix . '/' . $source, $prefix . '/' . $target, $page );
