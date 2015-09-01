@@ -39,8 +39,8 @@ class SpecialContentStaging extends SpecialPage {
 			if ( $action === 'archive' ) {
 				$this->archivePage( $page );
 			}
-			if ( $action === 'recover' ) {
-				$this->recoverPage( $page );
+			if ( $action === 'restore' ) {
+				$this->restorePage( $page );
 			}
 
 			$pages = array();
@@ -109,7 +109,7 @@ class SpecialContentStaging extends SpecialPage {
 						'" style="font-weight:bold">&#128448;</a></html>';
 				} else {
 					$archiveOption = '<html><a href="'. $baseUrl .
-						'&action=recover&page=' . $title .
+						'&action=restore&page=' . $title .
 						'" style="font-weight:bold">&#128449;</a></html>';
 				}
 
@@ -227,15 +227,15 @@ class SpecialContentStaging extends SpecialPage {
 		return true;
 	}
 
-	private function recoverPage( $title ) {
+	private function restorePage( $title ) {
 		foreach( $this->stages as $stage => $number ) {
 			$archiveTitle = $this->mwNamespace .  $this->pagePrefix . '/' . $stage . '/' . $title;
 			$archivePage = WikiPage::factory( Title::newFromText( $archiveTitle ) );
-			$this->doRecoverPage( $archivePage );
+			$this->doRestorePage( $archivePage );
 		}
 	}
 
-	private function doRecoverPage( WikiPage $page ) {
+	private function doRestorePage( WikiPage $page ) {
 		$oldContent = $page->getContent();
 		if( $oldContent === null || !$this->isArchivedPage( $page ) ) {
 			return false;
