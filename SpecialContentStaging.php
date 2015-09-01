@@ -27,10 +27,10 @@ class SpecialContentStaging extends SpecialPage {
 		$page = $request->getText( 'page' );
 		$source = $request->getText( 'source' );
 		$target = $request->getText( 'target' );
-		$showArchived = $request->getText( 'showArchived' );
+		$showArchived = $request->getBool( 'showArchived' );
 
 		$baseUrl = "?title=Special:ContentStaging";
-		$baseUrl .= empty( $showArchived ) ? "" : "&showArchived=1";
+		$baseUrl .= $showArchived ? "&showArchived=1" : "";
 
 
 		if ( !empty( $this->pagePrefix ) ) {
@@ -51,12 +51,12 @@ class SpecialContentStaging extends SpecialPage {
 				$title = $this->getTitleWithoutPrefixes( $page->page_title );
 
 				$wikiPage = WikiPage::newFromID( $page->page_id );
-				if( $this->isArchivedPage( $wikiPage ) && !empty( $showArchived ) ) {
+				if( $this->isArchivedPage( $wikiPage ) && $showArchived ) {
 					if( !array_key_exists( $title, $pages ) ) {
 						$pages[$title] = $this->stages;
 					}
 					$pages[$title][$stage] =  $wikiPage;
-				} elseif( !$this->isArchivedPage( $wikiPage ) && empty( $showArchived ) ) {
+				} elseif( !$this->isArchivedPage( $wikiPage ) && !$showArchived ) {
 					if( !array_key_exists( $title, $pages ) ) {
 						$pages[$title] = $this->stages;
 					}
@@ -107,7 +107,7 @@ class SpecialContentStaging extends SpecialPage {
 					}
 				}
 
-				if ( empty( $showArchived ) ) {
+				if ( !$showArchived ) {
 					$archiveOption = "<html><a href=\"". $baseUrl .
 						"&action=archive&page=" . $title .
 						"\" style=\"font-weight:bold\">&#128448;</a></html>";
@@ -121,7 +121,7 @@ class SpecialContentStaging extends SpecialPage {
 			}
 			$resultTable .= "|}\n";
 
-			if ( empty( $showArchived ) ) {
+			if ( !$showArchived ) {
 				$archiveLink = "<html><a href=\"?title=Special:ContentStaging&showArchived=1\">&#128448; View Archive</a></html>";
 			} else {
 				$archiveLink = "<html><a href=\"?title=Special:ContentStaging\">&#128449; View List</a></html>";
