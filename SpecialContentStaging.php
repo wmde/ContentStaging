@@ -82,7 +82,7 @@ class SpecialContentStaging extends SpecialPage {
 				$resultTable .= "| [[" . $this->mwNamespace . $this->pagePrefix . "/test/" . $title . " | " . $title . "]]\n";
 
 				foreach ( array_keys( $this->stages ) as $stage ) {
-					if ( $stages[$stage] !== 0 ) {
+					if ( $this->wikiPageExists( $stages[$stage] ) ) {
 						$currStage = $stage;
 						$targetStage = '';
 
@@ -92,19 +92,17 @@ class SpecialContentStaging extends SpecialPage {
 							$targetStage = $keys[$element + 1];
 						}
 
-						$stagingStatus = '';
-						if ( $this->wikiPageExists( $stages[$stage] ) ) {
-							$currPage = $stages[$stage];
-							$targetPage = $stages[$targetStage];
+						$currPage = $stages[$stage];
+						$targetPage = $stages[$targetStage];
 
-							$stagingStatus = '<span style="color: green">&#10003;</span>';
-							if ( $stage !== "production" && ( !$this->wikiPageExists( $targetPage ) || $this->stageContentDiffers( $currPage, $targetPage, $currStage, $targetStage ) ) ) {
-								$stagingStatus = '<html><a href="' . $baseUrl .
-									'&action=copy&page=' . $currPage->getId() .
-									'&source=' . $currStage .
-									'&target=' . $targetStage . '" style="color: red;">&#10007;</a></html>';
-							}
+						$stagingStatus = '<span style="color: green">&#10003;</span>';
+						if ( $stage !== "production" && ( !$this->wikiPageExists( $targetPage ) || $this->stageContentDiffers( $currPage, $targetPage, $currStage, $targetStage ) ) ) {
+							$stagingStatus = '<html><a href="' . $baseUrl .
+								'&action=copy&page=' . $currPage->getId() .
+								'&source=' . $currStage .
+								'&target=' . $targetStage . '" style="color: red;">&#10007;</a></html>';
 						}
+
 						$resultTable .= "| style='text-align: center;' | " . $stagingStatus . "\n";
 					} else {
 						$resultTable .= "| \n";
