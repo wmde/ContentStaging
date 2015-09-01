@@ -70,11 +70,11 @@ class SpecialContentStaging extends SpecialPage {
 
 			$resultTable = "{| class=\"wikitable sortable\" border=\"1\"\n";
 			$resultTable .= "|-\n";
-			$resultTable .= "! Titel\n";
+			$resultTable .= "! Title\n";
 			$resultTable .= "! Test <html><br /><a href='" . $baseUrl . "&action=stageall&source=test&target=stage'>Stage all</a></html>\n";
 			$resultTable .= "! Stage <html><br /><a href='" . $baseUrl . "&action=stageall&source=stage&target=production'>Stage all</a></html>\n";
-			$resultTable .= "! Produktion\n";
-			$resultTable .= "! Optionen\n";
+			$resultTable .= "! Production\n";
+			$resultTable .= "! Options\n";
 
 			foreach( $pages as $title => $stages ) {
 				$resultTable .= "|-\n";
