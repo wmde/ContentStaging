@@ -51,12 +51,8 @@ class SpecialContentStaging extends SpecialPage {
 				$title = $this->getTitleWithoutPrefixes( $page->page_title );
 
 				$wikiPage = WikiPage::newFromID( $page->page_id );
-				if( $this->isArchivedPage( $wikiPage ) && $showArchived ) {
-					if( !array_key_exists( $title, $pages ) ) {
-						$pages[$title] = $this->stages;
-					}
-					$pages[$title][$stage] =  $wikiPage;
-				} elseif( !$this->isArchivedPage( $wikiPage ) && !$showArchived ) {
+
+				if( $this->shouldPageShow( $wikiPage, $showArchived ) ) {
 					if( !array_key_exists( $title, $pages ) ) {
 						$pages[$title] = $this->stages;
 					}
@@ -191,6 +187,10 @@ class SpecialContentStaging extends SpecialPage {
 		$objTarget->doEditContent( new WikitextContent( $pageContent ), "Staging content from " . $source . " to " . $target );
 
 		return $objTarget;
+	}
+
+	private function shouldPageShow( $wikiPage, $showArchived ) {
+		return $this->isArchivedPage( $wikiPage ) xor !$showArchived;
 	}
 
 	private function archivePage( $title ) {
