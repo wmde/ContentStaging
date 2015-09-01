@@ -25,8 +25,8 @@ class SpecialContentStaging extends SpecialPage {
 
 		$action = $request->getText( 'action' );
 		$page = $request->getText( 'page' );
-		$source = $request->getText( 'source' );
-		$target = $request->getText( 'target' );
+		$currStage = $request->getText( 'source' );
+		$targetStage = $request->getText( 'target' );
 		$showArchived = $request->getBool( 'showArchived' );
 
 		$baseUrl = '?title=Special:ContentStaging';
@@ -34,7 +34,7 @@ class SpecialContentStaging extends SpecialPage {
 
 		if ( !empty( $this->pagePrefix ) ) {
 			if ( $action === 'copy' ) {
-				$this->copyPage( $this->pagePrefix, $page, $source, $target );
+				$this->copyPage( $this->pagePrefix, $page, $currStage, $targetStage );
 			}
 			if ( $action === 'archive' ) {
 				$this->archivePage( $page );
@@ -58,8 +58,8 @@ class SpecialContentStaging extends SpecialPage {
 					$pages[$title][$stage] =  $wikiPage;
 				}
 
-				if ( $action === "stageall" && $source === $stage ) {
-					$pages[$title][$target] = $this->copyPage( $this->pagePrefix, $page->page_id, $source, $target );
+				if ( $action === "stageall" && $currStage === $stage ) {
+					$pages[$title][$targetStage] = $this->copyPage( $this->pagePrefix, $page->page_id, $currStage, $targetStage );
 				}
 			}
 
@@ -77,24 +77,25 @@ class SpecialContentStaging extends SpecialPage {
 
 				foreach( array_keys( $this->stages ) as $stage ) {
 					if( $stages[$stage] !== 0 ) {
-						$target = "";
-						$source = $stage;
+						$currStage = $stage;
+						$targetStage = '';
+
 						$keys = array_keys( $stages );
-						$element = array_search( $source, $keys );
-						if ( $stage !== "production" ) $target = $keys[$element + 1];
+						$element = array_search( $currStage, $keys );
+						if ( $stage !== "production" ) $targetStage = $keys[$element + 1];
 
-						$currPage = $stages[$stage];
-						$pageNextStage = $stages[$target];
+						$stagingStatus = '';
+						if ( $this->wikiPageExists( $stages[$stage] ) ) {
+							$currPage = $stages[$stage];
+							$targetPage = $stages[$targetStage];
 
-						$stagingStatus = '<span style="color: green">&#10003;</span>';
-
-						if( get_class( $currPage ) !== 'WikiPage' ) {
-							$stagingStatus = '';
-						} elseif ( $stage !== 'production' && ( get_class( $pageNextStage ) !== 'WikiPage' || $this->replaceStageInternalRefs( $this->pagePrefix, $currPage->getText(), $source, $target ) !== $pageNextStage->getText() ) ) {
-							$stagingStatus = '<html><a href="' . $baseUrl .
-								'&action=copy&page=' . $currPage->getId() .
-								'&source=' . $source .
-								'&target=' . $target . '" style="color: red;">&#10007;</a></html>';
+							$stagingStatus = '<span style="color: green">&#10003;</span>';
+							if ( $stage !== "production" && ( !$this->wikiPageExists( $targetPage ) || $this->stageContentDiffers( $currPage, $targetPage, $currStage, $targetStage ) ) ) {
+								$stagingStatus = '<html><a href="' . $baseUrl .
+									'&action=copy&page=' . $currPage->getId() .
+									'&source=' . $currStage .
+									'&target=' . $targetStage . '" style="color: red;">&#10007;</a></html>';
+							}
 						}
 						$resultTable .= "| style='text-align: center;' | " . $stagingStatus . "\n";
 					} else {
@@ -186,6 +187,17 @@ class SpecialContentStaging extends SpecialPage {
 		$objTarget->doEditContent( new WikitextContent( $pageContent ), 'Staging content from ' . $source . ' to ' . $target );
 
 		return $objTarget;
+	}
+
+	private function stageContentDiffers( WikiPage $sourceWikiPage, WikiPage $targetWikiPage, $sourceStage, $targetStage ) {
+		$sourceText = $sourceWikiPage->getContent()->getNativeData();
+		$targetText = $targetWikiPage->getContent()->getNativeData();
+
+		return $this->replaceStageInternalRefs( $this->pagePrefix, $sourceText, $sourceStage, $targetStage ) !== $targetText;
+	}
+
+	private function wikiPageExists( $wikiPage ) {
+		return get_class( $wikiPage ) === 'WikiPage';
 	}
 
 	private function shouldPageShow( $wikiPage, $showArchived ) {
