@@ -14,7 +14,7 @@ $wgExtensionCredits['specialpage'][] = array(
 	'author' => 'Kai Nissen for Wikimedia Deutschland e. V.',
 	'url' => 'https://www.wikimedia.de/',
 	'descriptionmsg' => 'contentstaging-desc',
-	'version' => '0.1.1',
+	'version' => '0.2.0',
 );
 
 $wgAutoloadClasses['SpecialContentStaging'] = __DIR__ . '/SpecialContentStaging.php';
