@@ -29,6 +29,10 @@ class SpecialContentStaging extends SpecialPage {
 		$target = $request->getText( 'target' );
 		$showArchived = $request->getText( 'showArchived' );
 
+		$baseUrl = "?title=Special:ContentStaging";
+		$baseUrl .= empty( $showArchived ) ? "" : "&showArchived=1";
+
+
 		if ( !empty( $this->pagePrefix ) ) {
 			if ( $action === "copy" ) {
 				$this->copyPage( $this->pagePrefix, $page, $source, $target );
@@ -67,8 +71,8 @@ class SpecialContentStaging extends SpecialPage {
 			$resultTable = "{| class=\"wikitable sortable\" border=\"1\"\n";
 			$resultTable .= "|-\n";
 			$resultTable .= "! Titel\n";
-			$resultTable .= "! Test <html><br /><a href='?title=Special:ContentStaging&prefix=" . $this->pagePrefix . "&action=stageall&source=test&target=stage'>Stage all</a></html>\n";
-			$resultTable .= "! Stage <html><br /><a href='?title=Special:ContentStaging&prefix=" . $this->pagePrefix . "&action=stageall&source=stage&target=production'>Stage all</a></html>\n";
+			$resultTable .= "! Test <html><br /><a href='" . $baseUrl . "&action=stageall&source=test&target=stage'>Stage all</a></html>\n";
+			$resultTable .= "! Stage <html><br /><a href='" . $baseUrl . "&action=stageall&source=stage&target=production'>Stage all</a></html>\n";
 			$resultTable .= "! Produktion\n";
 			$resultTable .= "! Optionen\n";
 
@@ -92,10 +96,10 @@ class SpecialContentStaging extends SpecialPage {
 						$stagingStatus = "<span style=\"color: green\">&#10003;</span>";
 
 						if ( $stage !== "production" && ( !$pageNextStage || $this->replaceStageInternalRefs( $this->pagePrefix, $currPage->getText(), $source, $target ) !== $pageNextStage->getText() ) ) {
-							$stagingStatus = "<html><a href=\"?title=Special:ContentStaging&prefix=" . $this->pagePrefix .
-									"&action=copy&page=" . $currPage->getId() .
-									"&source=" . $source . "&target=" . $target .
-									"\" style=\"color: red;\">&#10007;</a></html>";
+							$stagingStatus = "<html><a href=\"". $baseUrl .
+								"&action=copy&page=" . $currPage->getId() .
+								"&source=" . $source .
+								"&target=" . $target ."\" style=\"color: red;\">&#10007;</a></html>";
 						}
 						$resultTable .= "| style='text-align: center;' | " . $stagingStatus . "\n";
 					} else {
@@ -104,11 +108,11 @@ class SpecialContentStaging extends SpecialPage {
 				}
 
 				if ( empty( $showArchived ) ) {
-					$archiveOption = "<html><a href=\"?title=Special:ContentStaging" .
+					$archiveOption = "<html><a href=\"". $baseUrl .
 						"&action=archive&page=" . $title .
 						"\" style=\"font-weight:bold\">&#128448;</a></html>";
 				} else {
-					$archiveOption = "<html><a href=\"?title=Special:ContentStaging&showArchived=1" .
+					$archiveOption = "<html><a href=\"". $baseUrl .
 						"&action=recover&page=" . $title .
 						"\" style=\"font-weight:bold\">&#128449;</a></html>";
 				}
