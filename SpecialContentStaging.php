@@ -1,6 +1,6 @@
 <?php
 class SpecialContentStaging extends SpecialPage {
-	
+
 	private $mwNamespaceIndex;
 	private $mwNamespace;
 	private $pagePrefix;
@@ -89,17 +89,17 @@ class SpecialContentStaging extends SpecialPage {
 						if ( $stage !== "production" ) $target = $keys[$element + 1];
 
 						$currPage = $stages[$stage];
-						$pageNextStage = null;
-						if ( !empty( $target ) ) {
-							$pageNextStage = $stages[$target];
-						}
+						$pageNextStage = $stages[$target];
+
 						$stagingStatus = "<span style=\"color: green\">&#10003;</span>";
 
-						if ( $stage !== "production" && ( !$pageNextStage || $this->replaceStageInternalRefs( $this->pagePrefix, $currPage->getText(), $source, $target ) !== $pageNextStage->getText() ) ) {
-							$stagingStatus = "<html><a href=\"". $baseUrl .
+						if( get_class( $currPage ) !== 'WikiPage' ) {
+							$stagingStatus = "";
+						} elseif ( $stage !== "production" && ( get_class( $pageNextStage ) !== 'WikiPage' || $this->replaceStageInternalRefs( $this->pagePrefix, $currPage->getText(), $source, $target ) !== $pageNextStage->getText() ) ) {
+							$stagingStatus = "<html><a href=\"" . $baseUrl .
 								"&action=copy&page=" . $currPage->getId() .
 								"&source=" . $source .
-								"&target=" . $target ."\" style=\"color: red;\">&#10007;</a></html>";
+								"&target=" . $target . "\" style=\"color: red;\">&#10007;</a></html>";
 						}
 						$resultTable .= "| style='text-align: center;' | " . $stagingStatus . "\n";
 					} else {
@@ -130,7 +130,7 @@ class SpecialContentStaging extends SpecialPage {
 			$output->addWikiText( $archiveLink . "\n" . $resultTable );
 		}
 	}
-	
+
 	function getPagesByStage( $prefix, $stage = "" ) {
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select(
@@ -141,7 +141,7 @@ class SpecialContentStaging extends SpecialPage {
 
 		return $res;
 	}
-	
+
 	function getPagesByPrefix( $prefix ) {
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select(
@@ -152,11 +152,11 @@ class SpecialContentStaging extends SpecialPage {
 
 		return $res;
 	}
-	
+
 	function replaceGeneralPrefix( $title, $prefix ) {
 		return str_replace( $prefix . "/", "", $title );
 	}
-	
+
 	function getTitleWithoutPrefixes( $fullTitle ) {
 		$arrTitle = explode( "/", $fullTitle, 3 );
 		return $arrTitle[sizeof( $arrTitle ) - 1];
@@ -166,11 +166,11 @@ class SpecialContentStaging extends SpecialPage {
 		$arrTitle = explode( "/", $fullTitle, 3 );
 		return sizeof( $arrTitle ) > 2 ? $arrTitle[sizeof( $arrTitle ) - 2] : "unstaged";
 	}
-	
+
 	function replaceStageInternalRefs( $prefix, $page, $source, $target ) {
 		return str_replace( $prefix . "/" . $source, $prefix . "/" . $target, $page );
 	}
-	
+
 	function copyPage( $prefix, $page, $source, $target ) {
 		if ( is_string( $page ) ) {
 			$objSrc = WikiPage::newFromID( intval( $page ) );
@@ -183,13 +183,13 @@ class SpecialContentStaging extends SpecialPage {
 		} else {
 			$titleTarget = $this->mwNamespace . str_replace( $prefix . "/" . $source, $prefix . "/" . $target, $titleSrc );
 		}
-		
+
 		$pageContent = $objSrc->getContent();
 		$pageContent = $this->replaceStageInternalRefs( $prefix, $pageContent, $source, $target );
 
 		$objTarget = WikiPage::factory ( Title::newFromText( $titleTarget ) );
 		$objTarget->doEditContent( $pageContent, "Staging content from " . $source . " to " . $target );
-		
+
 		return $objTarget;
 	}
 
@@ -202,12 +202,12 @@ class SpecialContentStaging extends SpecialPage {
 	}
 
 	private function doArchivePage( WikiPage $page ) {
-		if( $this->isArchivedPage( $page ) ) {
+		$oldContent = $page->getContent();
+
+		if( $oldContent === null || $this->isArchivedPage( $page ) ) {
 			return false;
 		}
 
-
-		$oldContent = $page->getContent();
 		$text = $oldContent->getNativeData();
 
 		$text .= "\n[[Category:ContentStagingArchive]]";
@@ -225,11 +225,11 @@ class SpecialContentStaging extends SpecialPage {
 	}
 
 	private function doRecoverPage( WikiPage $page ) {
-		if( !$this->isArchivedPage( $page ) ) {
+		$oldContent = $page->getContent();
+		if( $oldContent === null || !$this->isArchivedPage( $page ) ) {
 			return false;
 		}
 
-		$oldContent = $page->getContent();
 		$text = $oldContent->getNativeData();
 
 		$text = str_replace('[[Category:ContentStagingArchive]]', '', $text );
