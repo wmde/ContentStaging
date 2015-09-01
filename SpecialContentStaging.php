@@ -285,7 +285,7 @@ class SpecialContentStaging extends SpecialPage {
 		$text = $oldContent->getNativeData();
 
 		$text .= "\n[[Category:ContentStagingArchive]]";
-		$page->doEditContent( new WikitextContent( $text ), User::newFromSession(), 'archived by ContentStaging' );
+		$page->doEditContent( new WikitextContent( $text ), 'archived by ContentStaging' );
 
 		return true;
 	}
@@ -316,7 +316,7 @@ class SpecialContentStaging extends SpecialPage {
 		$text = $oldContent->getNativeData();
 
 		$text = str_replace( '[[Category:ContentStagingArchive]]', '', $text );
-		$page->doEditContent( new WikitextContent( $text ), User::newFromSession(), 'restored by ContentStaging' );
+		$page->doEditContent( new WikitextContent( $text ), 'restored by ContentStaging' );
 
 		return true;
 	}
