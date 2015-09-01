@@ -181,7 +181,7 @@ class SpecialContentStaging extends SpecialPage {
 	 */
 	private function getTitleWithoutPrefixes( $fullTitle ) {
 		$arrTitle = explode( '/', $fullTitle, 3 );
-		return $arrTitle[sizeof( $arrTitle ) - 1];
+		return $arrTitle[count( $arrTitle ) - 1];
 	}
 
 	/**
@@ -190,7 +190,7 @@ class SpecialContentStaging extends SpecialPage {
 	 */
 	private function getStage( $fullTitle ) {
 		$arrTitle = explode( '/', $fullTitle, 3 );
-		return sizeof( $arrTitle ) > 2 ? $arrTitle[sizeof( $arrTitle ) - 2] : 'unstaged';
+		return count( $arrTitle ) > 2 ? $arrTitle[count( $arrTitle ) - 2] : 'unstaged';
 	}
 
 	/**
