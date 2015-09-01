@@ -117,7 +117,7 @@ class SpecialContentStaging extends SpecialPage {
 						"\" style=\"font-weight:bold\">&#128449;</a></html>";
 				}
 
-				$resultTable .= "|" . $archiveOption . "\n";
+				$resultTable .= "| style='text-align: center;' | " . $archiveOption . "\n";
 			}
 			$resultTable .= "|}\n";
 
