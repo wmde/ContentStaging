@@ -1,4 +1,5 @@
 <?php
+
 class SpecialContentStaging extends SpecialPage {
 
 	private $mwNamespaceIndex;
@@ -6,7 +7,7 @@ class SpecialContentStaging extends SpecialPage {
 	private $pagePrefix;
 	private $stages;
 
-	function __construct() {
+	public function __construct() {
 		global $wgContentStagingPrefix, $wgContentStagingNamespace, $wgContentStagingStages;
 
 		$this->mwNamespaceIndex = isset( $wgContentStagingNamespace ) ? ( $wgContentStagingNamespace ) : 0;
@@ -18,7 +19,7 @@ class SpecialContentStaging extends SpecialPage {
 		parent::__construct( 'ContentStaging', 'edit', true, false, 'default', false );
 	}
 
-	function execute( $par ) {
+	public function execute( $par ) {
 		$request = $this->getRequest();
 		$output = $this->getOutput();
 		$this->setHeaders();
@@ -34,7 +35,12 @@ class SpecialContentStaging extends SpecialPage {
 
 		if ( !empty( $this->pagePrefix ) ) {
 			if ( $action === 'copy' ) {
-				$this->copyPage( $this->pagePrefix, $page, $currStage, $targetStage );
+				$this->copyPage(
+					$this->pagePrefix,
+					WikiPage::newFromID( $page ),
+					$currStage,
+					$targetStage
+				);
 			}
 			if ( $action === 'archive' ) {
 				$this->archivePage( $page );
@@ -45,21 +51,21 @@ class SpecialContentStaging extends SpecialPage {
 
 			$pages = array();
 			$allPages = $this->getPagesByPrefix( $this->pagePrefix );
-			foreach( $allPages as $page ) {
+			foreach ( $allPages as $page ) {
 				$stage = $this->getStage( $page->page_title );
 				$title = $this->getTitleWithoutPrefixes( $page->page_title );
 
 				$wikiPage = WikiPage::newFromID( $page->page_id );
 
-				if( $this->shouldPageShow( $wikiPage, $showArchived ) ) {
-					if( !array_key_exists( $title, $pages ) ) {
+				if ( $this->shouldPageShow( $wikiPage, $showArchived ) ) {
+					if ( !array_key_exists( $title, $pages ) ) {
 						$pages[$title] = $this->stages;
 					}
-					$pages[$title][$stage] =  $wikiPage;
+					$pages[$title][$stage] = $wikiPage;
 				}
 
 				if ( $action === "stageall" && $currStage === $stage ) {
-					$pages[$title][$targetStage] = $this->copyPage( $this->pagePrefix, $page->page_id, $currStage, $targetStage );
+					$pages[$title][$targetStage] = $this->copyPage( $this->pagePrefix, $wikiPage, $currStage, $targetStage );
 				}
 			}
 
@@ -71,18 +77,20 @@ class SpecialContentStaging extends SpecialPage {
 			$resultTable .= "! Production\n";
 			$resultTable .= "! Options\n";
 
-			foreach( $pages as $title => $stages ) {
+			foreach ( $pages as $title => $stages ) {
 				$resultTable .= "|-\n";
 				$resultTable .= "| [[" . $this->mwNamespace . $this->pagePrefix . "/test/" . $title . " | " . $title . "]]\n";
 
-				foreach( array_keys( $this->stages ) as $stage ) {
-					if( $stages[$stage] !== 0 ) {
+				foreach ( array_keys( $this->stages ) as $stage ) {
+					if ( $stages[$stage] !== 0 ) {
 						$currStage = $stage;
 						$targetStage = '';
 
 						$keys = array_keys( $stages );
 						$element = array_search( $currStage, $keys );
-						if ( $stage !== "production" ) $targetStage = $keys[$element + 1];
+						if ( $stage !== "production" ) {
+							$targetStage = $keys[$element + 1];
+						}
 
 						$stagingStatus = '';
 						if ( $this->wikiPageExists( $stages[$stage] ) ) {
@@ -104,11 +112,11 @@ class SpecialContentStaging extends SpecialPage {
 				}
 
 				if ( !$showArchived ) {
-					$archiveOption = '<html><a href="'. $baseUrl .
+					$archiveOption = '<html><a href="' . $baseUrl .
 						'&action=archive&page=' . $title .
 						'" style="font-weight:bold">&#128448;</a></html>';
 				} else {
-					$archiveOption = '<html><a href="'. $baseUrl .
+					$archiveOption = '<html><a href="' . $baseUrl .
 						'&action=restore&page=' . $title .
 						'" style="font-weight:bold">&#128449;</a></html>';
 				}
@@ -127,68 +135,107 @@ class SpecialContentStaging extends SpecialPage {
 		}
 	}
 
-	function getPagesByStage( $prefix, $stage = "" ) {
+	/**
+	 * @param string $prefix
+	 * @param string $stage
+	 * @return bool|ResultWrapper
+	 */
+	private function getPagesByStage( $prefix, $stage = "" ) {
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select(
-				array( 'page' ),
-				array( 'page_id', 'page_title', 'page_namespace' ),
-				array( 'page_namespace = ' . $this->mwNamespaceIndex, 'page_title LIKE "' . $prefix . '/' . $stage . '%"' )
+			array( 'page' ),
+			array( 'page_id', 'page_title', 'page_namespace' ),
+			array( 'page_namespace = ' . $this->mwNamespaceIndex, 'page_title LIKE "' . $prefix . '/' . $stage . '%"' )
 		);
 
 		return $res;
 	}
 
-	function getPagesByPrefix( $prefix ) {
+	/**
+	 * @param string $prefix
+	 * @return bool|ResultWrapper
+	 */
+	private function getPagesByPrefix( $prefix ) {
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select(
-				array( 'page' ),
-				array( 'page_id', 'page_title', 'page_namespace' ),
-				array( 'page_namespace = ' . $this->mwNamespaceIndex, 'page_title LIKE "' . $prefix . '%"' )
+			array( 'page' ),
+			array( 'page_id', 'page_title', 'page_namespace' ),
+			array( 'page_namespace = ' . $this->mwNamespaceIndex, 'page_title LIKE "' . $prefix . '%"' )
 		);
 
 		return $res;
 	}
 
-	function replaceGeneralPrefix( $title, $prefix ) {
+	/**
+	 * @param string $title
+	 * @param string $prefix
+	 * @return string
+	 */
+	private function replaceGeneralPrefix( $title, $prefix ) {
 		return str_replace( $prefix . '/', '', $title );
 	}
 
-	function getTitleWithoutPrefixes( $fullTitle ) {
+	/**
+	 * @param string $fullTitle
+	 * @return string
+	 */
+	private function getTitleWithoutPrefixes( $fullTitle ) {
 		$arrTitle = explode( '/', $fullTitle, 3 );
 		return $arrTitle[sizeof( $arrTitle ) - 1];
 	}
 
-	function getStage( $fullTitle ) {
+	/**
+	 * @param string $fullTitle
+	 * @return string
+	 */
+	private function getStage( $fullTitle ) {
 		$arrTitle = explode( '/', $fullTitle, 3 );
 		return sizeof( $arrTitle ) > 2 ? $arrTitle[sizeof( $arrTitle ) - 2] : 'unstaged';
 	}
 
-	function replaceStageInternalRefs( $prefix, $page, $source, $target ) {
+	/**
+	 * @param $prefix
+	 * @param $page
+	 * @param $source
+	 * @param $target
+	 * @return mixed
+	 */
+	private function replaceStageInternalRefs( $prefix, $page, $source, $target ) {
 		return str_replace( $prefix . '/' . $source, $prefix . '/' . $target, $page );
 	}
 
-	function copyPage( $prefix, $page, $source, $target ) {
-		if ( is_string( $page ) ) {
-			$objSrc = WikiPage::newFromID( intval( $page ) );
-		} else {
-			$objSrc = $page;
-		}
-		$titleSrc = $objSrc->getTitle()->mTextform;
-		if( $source === '' ) {
+	/**
+	 * @param string $prefix
+	 * @param WikiPage $sourcePage
+	 * @param string $source
+	 * @param string $target
+	 * @return WikiPage
+	 * @throws MWException
+	 */
+	private function copyPage( $prefix, WikiPage $sourcePage, $source, $target ) {
+		$titleSrc = $sourcePage->getTitle()->mTextform;
+		if ( $source === '' ) {
 			$titleTarget = $this->mwNamespace . str_replace( $prefix . '/', $prefix . '/' . $target . '/', $titleSrc );
 		} else {
 			$titleTarget = $this->mwNamespace . str_replace( $prefix . '/' . $source, $prefix . '/' . $target, $titleSrc );
 		}
 
-		$pageContent = $objSrc->getContent()->getNativeData();
+		$pageContent = $sourcePage->getContent()->getNativeData();
 		$pageContent = $this->replaceStageInternalRefs( $prefix, $pageContent, $source, $target );
 
-		$objTarget = WikiPage::factory ( Title::newFromText( $titleTarget ) );
-		$objTarget->doEditContent( new WikitextContent( $pageContent ), 'Staging content from ' . $source . ' to ' . $target );
+		$targetPage = WikiPage::factory( Title::newFromText( $titleTarget ) );
+		$targetPage->doEditContent( new WikitextContent( $pageContent ), 'Staging content from ' . $source . ' to ' . $target );
 
-		return $objTarget;
+		return $targetPage;
 	}
 
+	/**
+	 * @param WikiPage $sourceWikiPage
+	 * @param WikiPage $targetWikiPage
+	 * @param string $sourceStage
+	 * @param string $targetStage
+	 * @return bool
+	 */
 	private function stageContentDiffers( WikiPage $sourceWikiPage, WikiPage $targetWikiPage, $sourceStage, $targetStage ) {
 		$sourceText = $sourceWikiPage->getContent()->getNativeData();
 		$targetText = $targetWikiPage->getContent()->getNativeData();
@@ -196,26 +243,44 @@ class SpecialContentStaging extends SpecialPage {
 		return $this->replaceStageInternalRefs( $this->pagePrefix, $sourceText, $sourceStage, $targetStage ) !== $targetText;
 	}
 
+	/**
+	 * @param $wikiPage
+	 * @return bool
+	 */
 	private function wikiPageExists( $wikiPage ) {
 		return get_class( $wikiPage ) === 'WikiPage';
 	}
 
-	private function shouldPageShow( $wikiPage, $showArchived ) {
+	/**
+	 * @param WikiPage $wikiPage
+	 * @param bool $showArchived
+	 * @return bool
+	 */
+	private function shouldPageShow( WikiPage $wikiPage, $showArchived ) {
 		return $this->isArchivedPage( $wikiPage ) xor !$showArchived;
 	}
 
+	/**
+	 * @param string $title
+	 * @throws MWException
+	 */
 	private function archivePage( $title ) {
-		foreach( $this->stages as $stage => $number ) {
-			$archiveTitle = $this->mwNamespace .  $this->pagePrefix . '/' . $stage . '/' . $title;
+		foreach ( $this->stages as $stage => $number ) {
+			$archiveTitle = $this->mwNamespace . $this->pagePrefix . '/' . $stage . '/' . $title;
 			$archivePage = WikiPage::factory( Title::newFromText( $archiveTitle ) );
 			$this->doArchivePage( $archivePage );
 		}
 	}
 
+	/**
+	 * @param WikiPage $page
+	 * @return bool
+	 * @throws MWException
+	 */
 	private function doArchivePage( WikiPage $page ) {
 		$oldContent = $page->getContent();
 
-		if( $oldContent === null || $this->isArchivedPage( $page ) ) {
+		if ( $oldContent === null || $this->isArchivedPage( $page ) ) {
 			return false;
 		}
 
@@ -227,32 +292,45 @@ class SpecialContentStaging extends SpecialPage {
 		return true;
 	}
 
+	/**
+	 * @param string $title
+	 * @throws MWException
+	 */
 	private function restorePage( $title ) {
-		foreach( $this->stages as $stage => $number ) {
-			$archiveTitle = $this->mwNamespace .  $this->pagePrefix . '/' . $stage . '/' . $title;
+		foreach ( $this->stages as $stage => $number ) {
+			$archiveTitle = $this->mwNamespace . $this->pagePrefix . '/' . $stage . '/' . $title;
 			$archivePage = WikiPage::factory( Title::newFromText( $archiveTitle ) );
 			$this->doRestorePage( $archivePage );
 		}
 	}
 
+	/**
+	 * @param WikiPage $page
+	 * @return bool
+	 * @throws MWException
+	 */
 	private function doRestorePage( WikiPage $page ) {
 		$oldContent = $page->getContent();
-		if( $oldContent === null || !$this->isArchivedPage( $page ) ) {
+		if ( $oldContent === null || !$this->isArchivedPage( $page ) ) {
 			return false;
 		}
 
 		$text = $oldContent->getNativeData();
 
-		$text = str_replace('[[Category:ContentStagingArchive]]', '', $text );
+		$text = str_replace( '[[Category:ContentStagingArchive]]', '', $text );
 		$page->doEditContent( new WikitextContent( $text ), User::newFromSession(), 'restored by ContentStaging' );
 
 		return true;
 	}
 
-	private function isArchivedPage( WikiPage $page ){
+	/**
+	 * @param WikiPage $page
+	 * @return bool
+	 */
+	private function isArchivedPage( WikiPage $page ) {
 		$currCategories = $page->getCategories();
-		foreach( $currCategories as $category ) {
-			if( $category->getText() === 'ContentStagingArchive' ) {
+		foreach ( $currCategories as $category ) {
+			if ( $category->getText() === 'ContentStagingArchive' ) {
 				return true;
 			}
 		}
