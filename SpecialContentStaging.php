@@ -180,11 +180,11 @@ class SpecialContentStaging extends SpecialPage {
 			$titleTarget = $this->mwNamespace . str_replace( $prefix . "/" . $source, $prefix . "/" . $target, $titleSrc );
 		}
 		
-		$pageContent = $objSrc->getText();
+		$pageContent = $objSrc->getContent();
 		$pageContent = $this->replaceStageInternalRefs( $prefix, $pageContent, $source, $target );
 
 		$objTarget = WikiPage::factory ( Title::newFromText( $titleTarget ) );
-		$objTarget->doEdit( $pageContent, "Staging content from " . $source . " to " . $target );
+		$objTarget->doEditContent( $pageContent, "Staging content from " . $source . " to " . $target );
 		
 		return $objTarget;
 	}
