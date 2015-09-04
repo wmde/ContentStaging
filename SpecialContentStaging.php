@@ -6,7 +6,7 @@ class SpecialContentStaging extends SpecialPage {
 	private $mwNamespace;
 	private $pagePrefix;
 	private $stages;
-	private $archiveMarker = "\n[[Category:ContentStagingArchive]]";
+	private $archiveMarker = "\n<noinclude>[[Category:ContentStagingArchive]]</noinclude>";
 
 	public function __construct() {
 		global $wgContentStagingPrefix, $wgContentStagingNamespace, $wgContentStagingStages;
