@@ -90,10 +90,10 @@ class SpecialContentStaging extends SpecialPage {
 						$element = array_search( $currStage, $keys );
 						if ( $stage !== "production" ) {
 							$targetStage = $keys[$element + 1];
+							$targetPage = $stages[$targetStage];
 						}
 
 						$currPage = $stages[$stage];
-						$targetPage = $stages[$targetStage];
 
 						$stagingStatus = '<span style="color: green">&#10003;</span>';
 						if ( $stage !== "production" && ( !$this->wikiPageExists( $targetPage ) || $this->stageContentDiffers( $currPage, $targetPage, $currStage, $targetStage ) ) ) {
