@@ -166,15 +166,6 @@ class SpecialContentStaging extends SpecialPage {
 	}
 
 	/**
-	 * @param string $title
-	 * @param string $prefix
-	 * @return string
-	 */
-	private function replaceGeneralPrefix( $title, $prefix ) {
-		return str_replace( $prefix . '/', '', $title );
-	}
-
-	/**
 	 * @param string $fullTitle
 	 * @return string
 	 */
