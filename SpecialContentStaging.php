@@ -6,6 +6,7 @@ class SpecialContentStaging extends SpecialPage {
 	private $mwNamespace;
 	private $pagePrefix;
 	private $stages;
+	private $archiveMarker = "\n<noinclude>[[Category:ContentStagingArchive]]</noinclude>";
 
 	public function __construct() {
 		global $wgContentStagingPrefix, $wgContentStagingNamespace, $wgContentStagingStages;
@@ -90,10 +91,10 @@ class SpecialContentStaging extends SpecialPage {
 						$element = array_search( $currStage, $keys );
 						if ( $stage !== "production" ) {
 							$targetStage = $keys[$element + 1];
+							$targetPage = $stages[$targetStage];
 						}
 
 						$currPage = $stages[$stage];
-						$targetPage = $stages[$targetStage];
 
 						$stagingStatus = '<span style="color: green">&#10003;</span>';
 						if ( $stage !== "production" && ( !$this->wikiPageExists( $targetPage ) || $this->stageContentDiffers( $currPage, $targetPage, $currStage, $targetStage ) ) ) {
@@ -284,7 +285,7 @@ class SpecialContentStaging extends SpecialPage {
 
 		$text = $oldContent->getNativeData();
 
-		$text .= "\n[[Category:ContentStagingArchive]]";
+		$text .= $this->archiveMarker;
 		$page->doEditContent( new WikitextContent( $text ), 'archived by ContentStaging' );
 
 		return true;
@@ -315,7 +316,7 @@ class SpecialContentStaging extends SpecialPage {
 
 		$text = $oldContent->getNativeData();
 
-		$text = str_replace( '[[Category:ContentStagingArchive]]', '', $text );
+		$text = str_replace( $this->archiveMarker, '', $text );
 		$page->doEditContent( new WikitextContent( $text ), 'restored by ContentStaging' );
 
 		return true;
