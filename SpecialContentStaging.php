@@ -136,22 +136,6 @@ class SpecialContentStaging extends SpecialPage {
 
 	/**
 	 * @param string $prefix
-	 * @param string $stage
-	 * @return bool|ResultWrapper
-	 */
-	private function getPagesByStage( $prefix, $stage = "" ) {
-		$dbr = wfGetDB( DB_SLAVE );
-		$res = $dbr->select(
-			array( 'page' ),
-			array( 'page_id', 'page_title', 'page_namespace' ),
-			array( 'page_namespace = ' . $this->mwNamespaceIndex, 'page_title LIKE "' . $prefix . '/' . $stage . '%"' )
-		);
-
-		return $res;
-	}
-
-	/**
-	 * @param string $prefix
 	 * @return bool|ResultWrapper
 	 */
 	private function getPagesByPrefix( $prefix ) {
