@@ -8,7 +8,7 @@ EOT;
 	exit( 1 );
 }
 
-$wgExtensionCredits['specialpage'][] = array(
+$GLOBALS['wgExtensionCredits']['specialpage'][] = array(
 	'path' => __FILE__,
 	'name' => 'Content Staging',
 	'author' => 'Kai Nissen for Wikimedia Deutschland e. V.',
@@ -17,6 +17,6 @@ $wgExtensionCredits['specialpage'][] = array(
 	'version' => '0.2.0',
 );
 
-$wgAutoloadClasses['SpecialContentStaging'] = __DIR__ . '/SpecialContentStaging.php';
-$wgExtensionMessagesFiles['ContentStaging'] = __DIR__ . '/ContentStaging.i18n.php';
-$wgSpecialPages['ContentStaging'] = 'SpecialContentStaging';
+$GLOBALS['wgAutoloadClasses']['SpecialContentStaging'] = __DIR__ . '/SpecialContentStaging.php';
+$GLOBALS['wgExtensionMessagesFiles']['ContentStaging'] = __DIR__ . '/ContentStaging.i18n.php';
+$GLOBALS['wgSpecialPages']['ContentStaging'] = 'SpecialContentStaging';
