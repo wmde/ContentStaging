@@ -187,7 +187,7 @@ class SpecialContentStaging extends SpecialPage {
 	 * @throws MWException
 	 */
 	private function copyPage( $prefix, WikiPage $sourcePage, $source, $target ) {
-		$titleSrc = $sourcePage->getTitle()->mTextform;
+		$titleSrc = $sourcePage->getTitle()->getText();
 		if ( $source === '' ) {
 			$titleTarget = $this->mwNamespace . str_replace( $prefix . '/', $prefix . '/' . $target . '/', $titleSrc );
 		} else {
