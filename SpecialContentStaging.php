@@ -14,7 +14,6 @@ class SpecialContentStaging extends SpecialPage {
 		$this->mwNamespaceIndex = isset( $wgContentStagingNamespace ) ? ( $wgContentStagingNamespace ) : 0;
 		$this->mwNamespace = MWNamespace::getCanonicalName( $this->mwNamespaceIndex ) . ":";
 		$this->pagePrefix = isset( $wgContentStagingPrefix ) ? $wgContentStagingPrefix : "CMS";
-		# TODO: make the special page respect user defined names and number of stages
 		$this->stages = isset( $wgContentStagingStages ) ? $wgContentStagingStages : array( "test" => 0, "stage" => 0, "production" => 0 );
 
 		parent::__construct( 'ContentStaging', 'edit', true, false, 'default', false );
@@ -70,12 +69,22 @@ class SpecialContentStaging extends SpecialPage {
 				}
 			}
 
+			$stageIterationCount = 0;
+			$stageTotalCount = count( $this->stages );
+			$stageNames = array_keys( $this->stages );
+
 			$resultTable = "{| class=\"wikitable sortable\" border=\"1\"\n";
 			$resultTable .= "|-\n";
 			$resultTable .= "! Title\n";
-			$resultTable .= "! Test <html><br /><a href='" . $baseUrl . "&action=stageall&source=test&target=stage'>Stage all</a></html>\n";
-			$resultTable .= "! Stage <html><br /><a href='" . $baseUrl . "&action=stageall&source=stage&target=production'>Stage all</a></html>\n";
-			$resultTable .= "! Production\n";
+			foreach ( $stageNames as $stageName ) {
+				$resultTable .= "! " . $stageName;
+				if ( $stageIterationCount < $stageTotalCount ) {
+					$resultTable .= " <html><br /><a href='" . $baseUrl . "&action=stageall&source=" . $stageName . "&target=" . $stageNames[$stageIterationCount + 1] . "'>Stage all</a></html>\n";
+				} else {
+					$resultTable .= "\n";
+				}
+				$stageIterationCount ++;
+			}
 			$resultTable .= "! Options\n";
 
 			foreach ( $pages as $title => $stages ) {
