@@ -89,7 +89,7 @@ class SpecialContentStaging extends SpecialPage {
 
 			foreach ( $pages as $title => $stages ) {
 				$resultTable .= "|-\n";
-				$resultTable .= "| [[" . $this->mwNamespace . $this->pagePrefix . "/test/" . $title . " | " . $title . "]]\n";
+				$resultTable .= "| [[" . $this->mwNamespace . $this->pagePrefix . "/" . $stageNames[0] . "/" . $title . " | " . $title . "]]\n";
 
 				foreach ( array_keys( $this->stages ) as $stage ) {
 					if ( $this->wikiPageExists( $stages[$stage] ) ) {
